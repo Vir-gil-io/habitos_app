@@ -6,7 +6,11 @@ class HabitListTile extends StatelessWidget {
   final Habit habit;
   final VoidCallback onStart;
 
-  const HabitListTile({super.key, required this.habit, required this.onStart});
+  const HabitListTile({
+    super.key,
+    required this.habit,
+    required this.onStart,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +24,7 @@ class HabitListTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primary.withOpacity(0.06),
+            color: AppTheme.primary.withValues(alpha: 0.06),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -28,12 +32,11 @@ class HabitListTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Ícono
           Container(
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.1),
+              color: AppTheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -43,15 +46,11 @@ class HabitListTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          // Nombre y meta
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  habit.name,
-                  style: textTheme.titleMedium,
-                ),
+                Text(habit.name, style: textTheme.titleMedium),
                 const SizedBox(height: 2),
                 Text(
                   'Al menos ${habit.goalLabel}',
@@ -60,13 +59,12 @@ class HabitListTile extends StatelessWidget {
               ],
             ),
           ),
-          // Botón start
           GestureDetector(
             onTap: onStart,
             child: Container(
               width: 38,
               height: 38,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppTheme.primary,
                 shape: BoxShape.circle,
               ),

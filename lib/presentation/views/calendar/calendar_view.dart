@@ -10,7 +10,11 @@ class CalendarView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.calendar_month_rounded, size: 64, color: AppTheme.primary.withOpacity(0.4)),
+          Icon(
+            Icons.calendar_month_rounded,
+            size: 64,
+            color: AppTheme.primary.withValues(alpha: 0.4),
+          ),
           const SizedBox(height: 16),
           Text(
             'Calendario',

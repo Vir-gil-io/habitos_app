@@ -12,11 +12,10 @@ class ProfileView extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Avatar
           const SizedBox(height: 16),
           CircleAvatar(
             radius: 48,
-            backgroundColor: AppTheme.primary.withOpacity(0.15),
+            backgroundColor: AppTheme.primary.withValues(alpha: 0.15),
             child: const Text(
               'JW',
               style: TextStyle(
@@ -40,7 +39,6 @@ class ProfileView extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // This week's progress (placeholder)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
@@ -49,7 +47,7 @@ class ProfileView extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primary.withOpacity(0.08),
+                  color: AppTheme.primary.withValues(alpha: 0.08),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -60,9 +58,9 @@ class ProfileView extends StatelessWidget {
               children: [
                 Text("This Week's Progress", style: textTheme.titleLarge),
                 const SizedBox(height: 12),
-                Row(
+                const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: const [
+                  children: [
                     _StatChip(emoji: '🦶', value: '67,525', label: 'pasos'),
                     _StatChip(emoji: '🔥', value: '6,730', label: 'cal'),
                     _StatChip(emoji: '📍', value: '50.2', label: 'mi'),
@@ -95,7 +93,7 @@ class _MetricChip extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 4),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: AppTheme.primary.withOpacity(0.1),
+        color: AppTheme.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -114,6 +112,7 @@ class _StatChip extends StatelessWidget {
   final String emoji;
   final String value;
   final String label;
+
   const _StatChip({
     required this.emoji,
     required this.value,

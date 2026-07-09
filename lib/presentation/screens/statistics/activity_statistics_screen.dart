@@ -31,7 +31,7 @@ class ActivityStatisticsScreen extends ConsumerWidget {
                   const Text('🔥', style: TextStyle(fontSize: 36)),
                   const SizedBox(height: 4),
                   Text(
-                    'You\'ve burned 1,116.5 cal',
+                    "You've burned 1,116.5 cal",
                     style: textTheme.titleLarge,
                   ),
                 ],
@@ -40,22 +40,43 @@ class ActivityStatisticsScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Barras por categoría
-            _CategoryBar(label: 'Jogging', percent: 0.22, color: AppTheme.primary),
-            _CategoryBar(label: 'Cycling', percent: 0.50, color: AppTheme.completed),
-            _CategoryBar(label: 'Yoga', percent: 0.13, color: AppTheme.streak),
-            _CategoryBar(label: 'Others', percent: 0.15, color: AppTheme.textSecondary),
+            _CategoryBar(
+              label: 'Jogging',
+              percent: 0.22,
+              color: AppTheme.primary,
+            ),
+            _CategoryBar(
+              label: 'Cycling',
+              percent: 0.50,
+              color: AppTheme.completed,
+            ),
+            _CategoryBar(
+              label: 'Yoga',
+              percent: 0.13,
+              color: AppTheme.streak,
+            ),
+            _CategoryBar(
+              label: 'Others',
+              percent: 0.15,
+              color: AppTheme.textSecondary,
+            ),
 
             const SizedBox(height: 20),
 
             // Distancia
             Row(
               children: [
-                const Icon(Icons.location_on_outlined, color: AppTheme.primary),
+                const Icon(
+                  Icons.location_on_outlined,
+                  color: AppTheme.primary,
+                ),
                 const SizedBox(width: 6),
                 Text('you have covered ', style: textTheme.bodyLarge),
                 Text(
                   '14.8 mi',
-                  style: textTheme.titleMedium?.copyWith(color: AppTheme.primary),
+                  style: textTheme.titleMedium?.copyWith(
+                    color: AppTheme.primary,
+                  ),
                 ),
               ],
             ),
@@ -88,7 +109,8 @@ class ActivityStatisticsScreen extends ConsumerWidget {
             const SizedBox(height: 8),
 
             habitsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () =>
+                  const Center(child: CircularProgressIndicator()),
               error: (e, _) => Text('Error: $e'),
               data: (habits) => Column(
                 children: habits
@@ -115,6 +137,7 @@ class _CategoryBar extends StatelessWidget {
   final String label;
   final double percent;
   final Color color;
+
   const _CategoryBar({
     required this.label,
     required this.percent,
@@ -129,14 +152,17 @@ class _CategoryBar extends StatelessWidget {
         children: [
           SizedBox(
             width: 70,
-            child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
           ),
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: percent,
-                backgroundColor: color.withOpacity(0.15),
+                backgroundColor: color.withValues(alpha: 0.15),
                 valueColor: AlwaysStoppedAnimation<Color>(color),
                 minHeight: 10,
               ),
@@ -160,6 +186,7 @@ class _MetricCard extends StatelessWidget {
   final IconData icon;
   final String value;
   final String label;
+
   const _MetricCard({
     required this.icon,
     required this.value,
@@ -175,7 +202,7 @@ class _MetricCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primary.withOpacity(0.07),
+            color: AppTheme.primary.withValues(alpha: 0.07),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

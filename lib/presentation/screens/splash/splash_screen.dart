@@ -23,7 +23,6 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    // ── Logo: escala + fade ─────────────────────────────────────────────
     _logoCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
@@ -35,7 +34,6 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _logoCtrl, curve: const Interval(0.0, 0.5)),
     );
 
-    // ── Texto: fade + slide ─────────────────────────────────────────────
     _textCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 700),
@@ -83,9 +81,9 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF4A3AB5), // primaryDark
-              Color(0xFF6C5CE7), // primary
-              Color(0xFF9D8DF1), // primaryLight
+              Color(0xFF4A3AB5),
+              Color(0xFF6C5CE7),
+              Color(0xFF9D8DF1),
             ],
           ),
         ),
@@ -113,7 +111,6 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Logo
                   FadeTransition(
                     opacity: _logoFade,
                     child: ScaleTransition(
@@ -124,7 +121,6 @@ class _SplashScreenState extends State<SplashScreen>
 
                   const SizedBox(height: 28),
 
-                  // Nombre + tagline
                   SlideTransition(
                     position: _textSlide,
                     child: FadeTransition(
@@ -145,7 +141,7 @@ class _SplashScreenState extends State<SplashScreen>
                             AppConstants.appTagline,
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.white.withOpacity(0.80),
+                              color: Colors.white.withValues(alpha: 0.80),
                               letterSpacing: 0.5,
                             ),
                           ),
@@ -172,7 +168,7 @@ class _SplashScreenState extends State<SplashScreen>
                       child: CircularProgressIndicator(
                         strokeWidth: 2.5,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.white.withOpacity(0.6),
+                          Colors.white.withValues(alpha: 0.6),
                         ),
                       ),
                     ),
@@ -181,7 +177,7 @@ class _SplashScreenState extends State<SplashScreen>
                       'Cargando tu progreso...',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.55),
+                        color: Colors.white.withValues(alpha: 0.55),
                         fontSize: 13,
                       ),
                     ),
@@ -196,8 +192,6 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-// ── Sub-widgets ──────────────────────────────────────────────────────────────
-
 class _LogoWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -205,12 +199,15 @@ class _LogoWidget extends StatelessWidget {
       width: 110,
       height: 110,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: Colors.white.withValues(alpha: 0.15),
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.3),
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.20),
+            color: Colors.black.withValues(alpha: 0.20),
             blurRadius: 24,
             spreadRadius: 2,
             offset: const Offset(0, 8),
@@ -251,7 +248,7 @@ class _Circle extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white.withOpacity(opacity),
+        color: Colors.white.withValues(alpha: opacity),
       ),
     );
   }

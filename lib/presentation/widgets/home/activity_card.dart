@@ -24,7 +24,7 @@ class ActivityCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primary.withOpacity(0.06),
+            color: AppTheme.primary.withValues(alpha: 0.06),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -32,12 +32,11 @@ class ActivityCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Ícono de categoría
           Container(
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: _categoryColor(habit.category).withOpacity(0.12),
+              color: _categoryColor(habit.category).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -49,12 +48,10 @@ class ActivityCard extends StatelessWidget {
 
           const SizedBox(width: 12),
 
-          // Nombre + progreso
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Hora si existe
                 if (habit.scheduledTime != null)
                   Text(
                     _formatTime(habit.scheduledTime!),
@@ -88,7 +85,9 @@ class ActivityCard extends StatelessWidget {
                     value: habit.progress,
                     backgroundColor: AppTheme.divider,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      habit.isCompleted ? AppTheme.completed : AppTheme.primary,
+                      habit.isCompleted
+                          ? AppTheme.completed
+                          : AppTheme.primary,
                     ),
                     minHeight: 4,
                   ),
@@ -99,7 +98,6 @@ class ActivityCard extends StatelessWidget {
 
           const SizedBox(width: 12),
 
-          // Botón play / pausa / check
           GestureDetector(
             onTap: onToggle,
             child: Container(
@@ -107,7 +105,7 @@ class ActivityCard extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 color: habit.isCompleted
-                    ? AppTheme.completed.withOpacity(0.15)
+                    ? AppTheme.completed.withValues(alpha: 0.15)
                     : AppTheme.primary,
                 shape: BoxShape.circle,
               ),
@@ -117,9 +115,7 @@ class ActivityCard extends StatelessWidget {
                     : habit.isActive
                         ? Icons.pause_rounded
                         : Icons.play_arrow_rounded,
-                color: habit.isCompleted
-                    ? AppTheme.completed
-                    : Colors.white,
+                color: habit.isCompleted ? AppTheme.completed : Colors.white,
                 size: 22,
               ),
             ),

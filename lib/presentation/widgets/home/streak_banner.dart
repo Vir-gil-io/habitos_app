@@ -30,7 +30,7 @@ class StreakBanner extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primary.withOpacity(0.08),
+            color: AppTheme.primary.withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -68,7 +68,6 @@ class StreakBanner extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // Barra pendientes
           _ProgressRow(
             label: 'Actividades pendientes',
             value: totalCount > 0 ? pendingCount / totalCount : 0,
@@ -79,7 +78,6 @@ class StreakBanner extends StatelessWidget {
 
           const SizedBox(height: 8),
 
-          // Barra completadas
           _ProgressRow(
             label: 'Actividades completadas',
             value: totalCount > 0 ? completedCount / totalCount : 0,
@@ -120,7 +118,7 @@ class StreakBanner extends StatelessWidget {
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: AppTheme.primary.withOpacity(0.1),
+                      color: AppTheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -160,7 +158,7 @@ class StreakBanner extends StatelessWidget {
 
 class _ProgressRow extends StatelessWidget {
   final String label;
-  final double value; // 0.0 – 1.0
+  final double value;
   final Color color;
   final int count;
   final int total;
@@ -181,16 +179,13 @@ class _ProgressRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+              Text(label, style: Theme.of(context).textTheme.bodyMedium),
               const SizedBox(height: 4),
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
                   value: value,
-                  backgroundColor: color.withOpacity(0.15),
+                  backgroundColor: color.withValues(alpha: 0.15),
                   valueColor: AlwaysStoppedAnimation<Color>(color),
                   minHeight: 6,
                 ),
@@ -199,7 +194,11 @@ class _ProgressRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppTheme.textSecondary),
+        const Icon(
+          Icons.arrow_forward_ios_rounded,
+          size: 14,
+          color: AppTheme.textSecondary,
+        ),
       ],
     );
   }

@@ -73,8 +73,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   children: [
                     Text('Tus Actividades', style: textTheme.titleLarge),
                     TextButton(
-                      onPressed: () =>
-                          context.go('${AppConstants.homeRoute}/statistics'),
+                      onPressed: () => context.go(
+                        '${AppConstants.homeRoute}/statistics',
+                      ),
                       child: const Text('Ver todo'),
                     ),
                   ],
@@ -98,7 +99,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   ),
                   data: (habits) => Column(
                     children: habits
-                        .take(4) // pantalla principal muestra los primeros 4
+                        .take(4)
                         .map(
                           (h) => ActivityCard(
                             habit: h,
@@ -111,7 +112,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   ),
                 ),
 
-                const SizedBox(height: 80), // espacio para el FAB
+                const SizedBox(height: 80),
               ]),
             ),
           ),
@@ -129,10 +130,9 @@ class _HomeAppBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          // Avatar
           CircleAvatar(
             radius: 20,
-            backgroundColor: AppTheme.primary.withOpacity(0.2),
+            backgroundColor: AppTheme.primary.withValues(alpha: 0.2),
             child: const Text(
               'JW',
               style: TextStyle(
@@ -144,7 +144,6 @@ class _HomeAppBar extends StatelessWidget {
           ),
           const SizedBox(width: 10),
 
-          // Nombre app
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,10 +165,12 @@ class _HomeAppBar extends StatelessWidget {
             ),
           ),
 
-          // Configuración
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.settings_outlined, color: AppTheme.textSecondary),
+            icon: const Icon(
+              Icons.settings_outlined,
+              color: AppTheme.textSecondary,
+            ),
           ),
         ],
       ),
@@ -190,7 +191,6 @@ class _DateSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    // Genera los días del mes actual centrados en hoy
     final days = List.generate(
       31,
       (i) => DateTime(now.year, now.month, i + 1),
@@ -204,8 +204,8 @@ class _DateSelector extends StatelessWidget {
         itemCount: days.length,
         itemBuilder: (context, index) {
           final day = days[index];
-          final isSelected = day.day == selectedDate.day &&
-              day.month == selectedDate.month;
+          final isSelected =
+              day.day == selectedDate.day && day.month == selectedDate.month;
           final isToday =
               day.day == now.day && day.month == now.month;
 
@@ -219,7 +219,7 @@ class _DateSelector extends StatelessWidget {
                 color: isSelected
                     ? AppTheme.primary
                     : isToday
-                        ? AppTheme.primary.withOpacity(0.12)
+                        ? AppTheme.primary.withValues(alpha: 0.12)
                         : Colors.transparent,
                 borderRadius: BorderRadius.circular(12),
               ),
