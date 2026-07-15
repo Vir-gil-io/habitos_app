@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:habitos_app/config/theme/app_theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habitos_app/presentation/providers/providers.dart';
 
-class ProfileView extends StatelessWidget {
+class ProfileView extends ConsumerWidget {
   const ProfileView({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(profileProvider).maybeWhen(
+      data: (p) => p,
+      orElse: () => null,
+    );
+    final name   = profile?.name ?? 'Usuario';
+    final height = profile?.heightCm.toStringAsFixed(0) ?? '—';
+    final weight = profile?.weightKg.toStringAsFixed(0) ?? '—';
+    final age    = profile?.ageYears.toString() ?? '—';
     final textTheme = Theme.of(context).textTheme;
 
     return SingleChildScrollView(
@@ -26,15 +36,15 @@ class ProfileView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Text('John Wick', style: textTheme.headlineMedium),
-          Text('Joined 15-06-2024', style: textTheme.bodyMedium),
+          Text(name, style: textTheme.headlineMedium),
+          Text('Miembro de HabitFlow', style: textTheme.bodyMedium),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _MetricChip(label: '180 m'),
-              _MetricChip(label: '82 kg'),
-              _MetricChip(label: '30 yrs'),
+              _MetricChip(label: '$height cm'),
+              _MetricChip(label: '$weight kg'),
+              _MetricChip(label: '$age años'),
             ],
           ),
           const SizedBox(height: 24),
@@ -61,16 +71,16 @@ class ProfileView extends StatelessWidget {
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _StatChip(emoji: '🦶', value: '67,525', label: 'pasos'),
-                    _StatChip(emoji: '🔥', value: '6,730', label: 'cal'),
-                    _StatChip(emoji: '📍', value: '50.2', label: 'mi'),
+                    _StatChip(emoji: '🦶', value: '—', label: 'pasos'),
+                    _StatChip(emoji: '🔥', value: '—', label: 'cal'),
+                    _StatChip(emoji: '📍', value: '—', label: 'km'),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Has completado 3 de 7 objetivos diarios',
-                  style: textTheme.bodyMedium,
-                  textAlign: TextAlign.center,
+                  'Conecta tu wearable para ver el progreso semanal',
+                  style: textTheme.bodyMedium, 
+                  textAlign: TextAlign.center
                 ),
               ],
             ),

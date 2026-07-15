@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:habitos_app/config/config.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -56,8 +57,14 @@ class _SplashScreenState extends State<SplashScreen>
     await _textCtrl.forward();
     await Future.delayed(const Duration(milliseconds: 1200));
 
-    if (mounted) {
+    if (!mounted) return;
+
+    // Revisar si hay sesión activa en Supabase
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
       context.go(AppConstants.homeRoute);
+    } else {
+      context.go(AppConstants.authRoute);
     }
   }
 

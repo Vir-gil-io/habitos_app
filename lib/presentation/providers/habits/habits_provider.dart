@@ -1,12 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:habitos_app/domain/entities/habit.dart';
-import 'package:habitos_app/infrastructure/datasource/local_habits_datasource_impl.dart';
+import 'package:habitos_app/infrastructure/datasource/supabase_habits_datasource_impl.dart';
 import 'package:habitos_app/infrastructure/repositories/habits_repository_impl.dart';
+import 'package:habitos_app/presentation/providers/auth/auth_provider.dart';
 
 // ── Repositorio ────────────────────────────────────────────────────────────
 final habitsRepositoryProvider = Provider((ref) {
-  return HabitsRepositoryImpl(LocalHabitsDatasourceImpl());
+  final client = ref.watch(supabaseClientProvider);
+  return HabitsRepositoryImpl(SupabaseHabitsDatasourceImpl(client));
 });
 
 // ── Notifier ───────────────────────────────────────────────────────────────
@@ -20,8 +22,7 @@ class HabitsNotifier extends StateNotifier<AsyncValue<List<Habit>>> {
   Future<void> loadHabits() async {
     state = const AsyncValue.loading();
     try {
-      final repo = _ref.read(habitsRepositoryProvider);
-      final habits = await repo.getTodayHabits();
+      final habits = await _ref.read(habitsRepositoryProvider).getTodayHabits();
       state = AsyncValue.data(habits);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -29,50 +30,74 @@ class HabitsNotifier extends StateNotifier<AsyncValue<List<Habit>>> {
   }
 
   Future<void> toggleActive(String habitId) async {
-    final repo = _ref.read(habitsRepositoryProvider);
-    final updated = await repo.toggleActive(habitId);
-    state = state.whenData((habits) {
-      return habits.map((h) => h.id == habitId ? updated : h).toList();
-    });
+    try {
+      final updated = await _ref.read(habitsRepositoryProvider).toggleActive(habitId);
+      state = state.whenData(
+        (list) => list.map((h) => h.id == habitId ? updated : h).toList(),
+      );
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+  
+  Future<void> createHabit({
+    required String name,
+    required HabitCategory category,
+    required double goalValue,
+    required HabitUnit unit,
+    DateTime? scheduledTime,
+  }) async {
+    try {
+      final habit = Habit(
+        id: '', // Supabase genera el UUID con gen_random_uuid()
+        name: name,
+        category: category,
+        goalValue: goalValue,
+        unit: unit,
+        scheduledTime: scheduledTime,
+      );
+      await _ref.read(habitsRepositoryProvider).saveHabit(habit);
+      await loadHabits(); // recarga para obtener el UUID real de BD
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
   }
 }
 
 final habitsProvider =
-    StateNotifierProvider<HabitsNotifier, AsyncValue<List<Habit>>>((ref) {
-  return HabitsNotifier(ref);
-});
+    StateNotifierProvider<HabitsNotifier, AsyncValue<List<Habit>>>(
+  (ref) => HabitsNotifier(ref),
+);
 
-// ── Derivados ──────────────────────────────────────────────────────────────
+// ── Providers derivados ────────────────────────────────────────────────────
 final pendingHabitsProvider = Provider<List<Habit>>((ref) {
   return ref.watch(habitsProvider).maybeWhen(
-        data: (habits) => habits.where((h) => !h.isCompleted).toList(),
+        data: (list) => list.where((h) => !h.isCompleted).toList(),
         orElse: () => [],
       );
 });
 
 final completedHabitsProvider = Provider<List<Habit>>((ref) {
   return ref.watch(habitsProvider).maybeWhen(
-        data: (habits) => habits.where((h) => h.isCompleted).toList(),
+        data: (list) => list.where((h) => h.isCompleted).toList(),
         orElse: () => [],
       );
 });
 
 final activeStreakProvider = Provider<int>((ref) {
   return ref.watch(habitsProvider).maybeWhen(
-        data: (habits) =>
-            habits.isNotEmpty ? habits.first.streakDays : 0,
+        data: (habits) => habits.isNotEmpty ? habits.first.streakDays : 0,
         orElse: () => 0,
       );
 });
 
 final nextHabitProvider = Provider<Habit?>((ref) {
   return ref.watch(habitsProvider).maybeWhen(
-        data: (habits) {
-          final pending = habits
+        data: (list) {
+          final pending = list
               .where((h) => !h.isCompleted && h.scheduledTime != null)
               .toList()
-            ..sort((a, b) =>
-                a.scheduledTime!.compareTo(b.scheduledTime!));
+            ..sort((a, b) => a.scheduledTime!.compareTo(b.scheduledTime!));
           return pending.isNotEmpty ? pending.first : null;
         },
         orElse: () => null,

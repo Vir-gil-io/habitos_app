@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitos_app/config/theme/app_theme.dart';
+import 'package:habitos_app/domain/entities/habit.dart';
 import 'package:habitos_app/presentation/providers/providers.dart';
 import 'package:habitos_app/presentation/widgets/home/activity_card.dart';
+import 'package:habitos_app/presentation/widgets/habits/edit_habit_sheet.dart';
 
 class ActivityStatisticsScreen extends ConsumerWidget {
   const ActivityStatisticsScreen({super.key});
@@ -11,6 +13,36 @@ class ActivityStatisticsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final habitsAsync = ref.watch(habitsProvider);
     final textTheme = Theme.of(context).textTheme;
+
+    // ── Datos reales calculados de los hábitos ──────────────────────────
+    final allHabits = habitsAsync.maybeWhen(data: (h) => h, orElse: () => []);
+    final completed = allHabits.where((h) => h.isCompleted).length;
+    final total = allHabits.length;
+
+    // Conteo por categoría para las barras
+    int cognitive = 0, physical = 0, hydration = 0, productivity = 0, rest = 0;
+    for (final h in allHabits) {
+      switch (h.category) {
+        case HabitCategory.cognitive:
+          cognitive++;
+          break;
+        case HabitCategory.physical:
+          physical++;
+          break;
+        case HabitCategory.hydration:
+          hydration++;
+          break;
+        case HabitCategory.productivity:
+          productivity++;
+          break;
+        case HabitCategory.rest:
+          rest++;
+          break;
+      }
+    }
+    final cats = [cognitive, physical, hydration, productivity, rest];
+    final maxCat = cats.reduce((a, b) => a > b ? a : b);
+    double pct(int n) => maxCat == 0 ? 0 : n / maxCat;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -31,34 +63,44 @@ class ActivityStatisticsScreen extends ConsumerWidget {
                   const Text('🔥', style: TextStyle(fontSize: 36)),
                   const SizedBox(height: 4),
                   Text(
-                    "You've burned 1,116.5 cal",
+                    '$completed de $total hábitos completados hoy',
                     style: textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Calorías y pasos disponibles cuando se conecte el wearable',
+                    style: textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
 
-            // Barras por categoría
             _CategoryBar(
-              label: 'Jogging',
-              percent: 0.22,
+              label: 'Cognitivo',
+              percent: pct(cognitive),
               color: AppTheme.primary,
             ),
             _CategoryBar(
-              label: 'Cycling',
-              percent: 0.50,
+              label: 'Físico',
+              percent: pct(physical),
               color: AppTheme.completed,
             ),
             _CategoryBar(
-              label: 'Yoga',
-              percent: 0.13,
-              color: AppTheme.streak,
+              label: 'Hidratación',
+              percent: pct(hydration),
+              color: const Color(0xFF0984E3),
             ),
             _CategoryBar(
-              label: 'Others',
-              percent: 0.15,
-              color: AppTheme.textSecondary,
+              label: 'Productividad',
+              percent: pct(productivity),
+              color: AppTheme.pending,
+            ),
+            _CategoryBar(
+              label: 'Descanso',
+              percent: pct(rest),
+              color: AppTheme.streak,
             ),
 
             const SizedBox(height: 20),
@@ -66,10 +108,7 @@ class ActivityStatisticsScreen extends ConsumerWidget {
             // Distancia
             Row(
               children: [
-                const Icon(
-                  Icons.location_on_outlined,
-                  color: AppTheme.primary,
-                ),
+                const Icon(Icons.location_on_outlined, color: AppTheme.primary),
                 const SizedBox(width: 6),
                 Text('you have covered ', style: textTheme.bodyLarge),
                 Text(
@@ -89,16 +128,16 @@ class ActivityStatisticsScreen extends ConsumerWidget {
                 Expanded(
                   child: _MetricCard(
                     icon: Icons.directions_walk_rounded,
-                    value: '19,124',
-                    label: 'steps',
+                    value: '-',
+                    label: 'pasos (wearable)',
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _MetricCard(
                     icon: Icons.access_time_rounded,
-                    value: '2h 14m',
-                    label: 'time',
+                    value: '-',
+                    label: 'tiempo (wearable)',
                   ),
                 ),
               ],
@@ -109,17 +148,23 @@ class ActivityStatisticsScreen extends ConsumerWidget {
             const SizedBox(height: 8),
 
             habitsAsync.when(
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Text('Error: $e'),
               data: (habits) => Column(
                 children: habits
+                    .take(10)   // ← máximo 10
                     .map(
                       (h) => ActivityCard(
                         habit: h,
                         onToggle: () => ref
                             .read(habitsProvider.notifier)
                             .toggleActive(h.id),
+                        onTap: () => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => EditHabitSheet(habit: h),
+                        ),
                       ),
                     )
                     .toList(),
@@ -152,10 +197,7 @@ class _CategoryBar extends StatelessWidget {
         children: [
           SizedBox(
             width: 70,
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
           ),
           Expanded(
             child: ClipRRect(
@@ -171,10 +213,9 @@ class _CategoryBar extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             '${(percent * 100).toInt()}%',
-            style: Theme.of(context)
-                .textTheme
-                .labelSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -217,9 +258,9 @@ class _MetricCard extends StatelessWidget {
             children: [
               Text(
                 value,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               Text(label, style: Theme.of(context).textTheme.labelSmall),
             ],

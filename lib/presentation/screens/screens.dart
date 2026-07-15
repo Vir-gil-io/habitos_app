@@ -1,3 +1,4 @@
+export 'package:habitos_app/presentation/screens/auth/auth_screen.dart';
 export 'package:habitos_app/presentation/screens/splash/splash_screen.dart';
 export 'package:habitos_app/presentation/screens/home/home_screen.dart';
 export 'package:habitos_app/presentation/screens/habits/habits_screen.dart';

@@ -2,9 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:habitos_app/config/theme/app_theme.dart';
 import 'package:habitos_app/presentation/views/habits/habits_view.dart';
 import 'package:habitos_app/presentation/widgets/shared/bottom_nav_bar.dart';
+import 'package:habitos_app/presentation/widgets/habits/add_habit_sheet.dart';
 
 class HabitsScreen extends StatelessWidget {
   const HabitsScreen({super.key});
+
+  void _openAddHabit(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const AddHabitSheet(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,11 +28,12 @@ class HabitsScreen extends StatelessWidget {
       body: const HabitsView(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: agregar nuevo hábito
+          _openAddHabit(context);
         },
         backgroundColor: AppTheme.primary,
         foregroundColor: Colors.white,
         shape: const CircleBorder(),
+        tooltip: 'Agregar hábito',
         child: const Icon(Icons.add_rounded),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

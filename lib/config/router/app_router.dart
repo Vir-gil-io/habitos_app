@@ -10,7 +10,10 @@ final appRouter = GoRouter(
       path: AppConstants.splashRoute,
       builder: (context, state) => const SplashScreen(),
     ),
-
+    GoRoute(
+      path: AppConstants.authRoute,
+      builder: (context, state) => const AuthScreen(),
+    ),
     // ── Contenedor principal con bottom nav ─────────────────────────────
     GoRoute(
       path: AppConstants.homeRoute,

@@ -5,6 +5,7 @@ import 'package:habitos_app/config/config.dart';
 import 'package:habitos_app/presentation/providers/providers.dart';
 import 'package:habitos_app/presentation/widgets/widgets.dart';
 
+
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
 
@@ -23,6 +24,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
     final streak = ref.watch(activeStreakProvider);
     final nextHabit = ref.watch(nextHabitProvider);
     final textTheme = Theme.of(context).textTheme;
+    final profile = ref.watch(profileProvider).maybeWhen(
+      data: (p) => p,
+      orElse: () => null,
+    );
 
     return RefreshIndicator(
       onRefresh: () async => ref.read(habitsProvider.notifier).loadHabits(),
@@ -99,15 +104,21 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   ),
                   data: (habits) => Column(
                     children: habits
-                        .take(4)
+                        .take(5)
                         .map(
-                          (h) => ActivityCard(
-                            habit: h,
-                            onToggle: () => ref
-                                .read(habitsProvider.notifier)
-                                .toggleActive(h.id),
-                          ),
-                        )
+                            (h) => ActivityCard(
+                              habit: h,
+                              onToggle: () => ref
+                                  .read(habitsProvider.notifier)
+                                  .toggleActive(h.id),
+                              onTap: () => showModalBottomSheet( // ← AGREGAR
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (_) => EditHabitSheet(habit: h),
+                              ),
+                            ),
+                          )
                         .toList(),
                   ),
                 ),
@@ -123,9 +134,13 @@ class _HomeViewState extends ConsumerState<HomeView> {
 }
 
 // ── AppBar personalizado ─────────────────────────────────────────────────────
-class _HomeAppBar extends StatelessWidget {
+class _HomeAppBar extends ConsumerWidget { // ← cambiar StatelessWidget por ConsumerWidget
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) { // ← agregar WidgetRef ref
+    final name = ref.watch(profileProvider).maybeWhen(
+      data: (p) => p?.name ?? 'Usuario',
+      orElse: () => 'Usuario',
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
@@ -158,7 +173,7 @@ class _HomeAppBar extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Hola, John Wick 👋',
+                  'Hola, $name',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ],

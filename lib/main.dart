@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:habitos_app/config/config.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: SupabaseConstants.url,
+    publishableKey: SupabaseConstants.publishableKey,
+  );
+
   runApp(
     const ProviderScope(
       child: HabitosApp(),

@@ -5,6 +5,7 @@ class AppConstants {
 
   // Rutas (coinciden con go_router)
   static const String splashRoute = '/';
+  static const String authRoute = '/auth';
   static const String homeRoute = '/home';
   static const String habitsRoute = '/habits';
   static const String calendarRoute = '/calendar';

@@ -5,122 +5,127 @@ import 'package:habitos_app/domain/entities/habit.dart';
 class ActivityCard extends StatelessWidget {
   final Habit habit;
   final VoidCallback onToggle;
+  final VoidCallback? onTap; // ← AGREGAR
 
   const ActivityCard({
     super.key,
     required this.habit,
     required this.onToggle,
+    this.onTap, // ← AGREGAR
   });
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withValues(alpha: 0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: _categoryColor(habit.category).withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primary.withValues(alpha: 0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            child: Icon(
-              _categoryIcon(habit.category),
-              color: _categoryColor(habit.category),
-              size: 22,
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (habit.scheduledTime != null)
-                  Text(
-                    _formatTime(habit.scheduledTime!),
-                    style: textTheme.labelSmall?.copyWith(
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                Text(
-                  habit.name,
-                  style: textTheme.titleMedium?.copyWith(
-                    decoration: habit.isCompleted
-                        ? TextDecoration.lineThrough
-                        : null,
-                    color: habit.isCompleted
-                        ? AppTheme.textSecondary
-                        : AppTheme.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  habit.currentLabel,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: habit.progress,
-                    backgroundColor: AppTheme.divider,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      habit.isCompleted
-                          ? AppTheme.completed
-                          : AppTheme.primary,
-                    ),
-                    minHeight: 4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          GestureDetector(
-            onTap: onToggle,
-            child: Container(
-              width: 40,
-              height: 40,
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
-                color: habit.isCompleted
-                    ? AppTheme.completed.withValues(alpha: 0.15)
-                    : AppTheme.primary,
-                shape: BoxShape.circle,
+                color: _categoryColor(habit.category).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                habit.isCompleted
-                    ? Icons.check_rounded
-                    : habit.isActive
-                        ? Icons.pause_rounded
-                        : Icons.play_arrow_rounded,
-                color: habit.isCompleted ? AppTheme.completed : Colors.white,
+                _categoryIcon(habit.category),
+                color: _categoryColor(habit.category),
                 size: 22,
               ),
             ),
-          ),
-        ],
+
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (habit.scheduledTime != null)
+                    Text(
+                      _formatTime(habit.scheduledTime!),
+                      style: textTheme.labelSmall?.copyWith(
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                  Text(
+                    habit.name,
+                    style: textTheme.titleMedium?.copyWith(
+                      decoration: habit.isCompleted
+                          ? TextDecoration.lineThrough
+                          : null,
+                      color: habit.isCompleted
+                          ? AppTheme.textSecondary
+                          : AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    habit.currentLabel,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: habit.progress,
+                      backgroundColor: AppTheme.divider,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        habit.isCompleted
+                            ? AppTheme.completed
+                            : AppTheme.primary,
+                      ),
+                      minHeight: 4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            GestureDetector(
+              onTap: onToggle,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: habit.isCompleted
+                      ? AppTheme.completed.withValues(alpha: 0.15)
+                      : AppTheme.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  habit.isCompleted
+                      ? Icons.check_rounded
+                      : habit.isActive
+                      ? Icons.pause_rounded
+                      : Icons.play_arrow_rounded,
+                  color: habit.isCompleted ? AppTheme.completed : Colors.white,
+                  size: 22,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
