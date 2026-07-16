@@ -11,9 +11,7 @@ Future<void> main() async {
     publishableKey: SupabaseConstants.publishableKey,
   );
 
-  debugPrint(
-    '✅ Supabase inicializado: ${Supabase.instance.client.supabaseUrl}',
-  );
+  debugPrint('Supabase inicializado: ${Supabase.instance.client.rest.url}');
 
   // Prueba real de conexión a la base de datos
   try {
@@ -21,16 +19,12 @@ Future<void> main() async {
         .from('profiles')
         .select()
         .limit(1);
-    debugPrint('✅ Conexión a Supabase OK. Respuesta: $response');
+    debugPrint('Conexión a Supabase Exitosa. Respuesta: $response');
   } catch (e) {
-    debugPrint('❌ Error de conexión a Supabase: $e');
+    debugPrint('Error de conexión a Supabase: $e');
   }
 
   runApp(const ProviderScope(child: HabitosApp()));
-}
-
-extension on SupabaseClient {
-  get supabaseUrl => null;
 }
 
 class HabitosApp extends StatelessWidget {
