@@ -60,14 +60,28 @@ class SupabaseHabitsDatasourceImpl implements HabitsDatasource {
     // Leer estado actual
     final current = await _client
         .from('habits')
-        .select('is_active')
+        .select()
         .eq('id', habitId)
         .eq('user_id', _userId)
         .single();
+      
+    final goalValue    = (current['goal_value'] as num).toDouble();
+    final currentValue = (current['current_value'] as num).toDouble();
+    final isActive     = current['is_active'] as bool;
+    final isCompleted  = currentValue >= goalValue;
+
+    late final Map<String, dynamic> updates;
+    if (isCompleted) {
+      updates = {'current_value': 0, 'is_active': false};
+    } else if (isActive) {
+      updates = {'current_value': goalValue, 'is_active': false};
+    } else {
+      updates = {'is_active': true};
+    }
 
     final row = await _client
         .from('habits')
-        .update({'is_active': !(current['is_active'] as bool)})
+        .update(updates)
         .eq('id', habitId)
         .eq('user_id', _userId)
         .select()
