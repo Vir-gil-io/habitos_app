@@ -8,6 +8,7 @@ class StreakBanner extends StatelessWidget {
   final int totalCount;
   final String? nextHabitName;
   final DateTime? nextHabitTime;
+  final VoidCallback? onViewStatistics;
 
   const StreakBanner({
     super.key,
@@ -17,6 +18,7 @@ class StreakBanner extends StatelessWidget {
     required this.totalCount,
     this.nextHabitName,
     this.nextHabitTime,
+    this.onViewStatistics,
   });
 
   @override
@@ -68,22 +70,28 @@ class StreakBanner extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          _ProgressRow(
-            label: 'Actividades pendientes',
-            value: totalCount > 0 ? pendingCount / totalCount : 0,
-            color: AppTheme.pending,
-            count: pendingCount,
-            total: totalCount,
+          GestureDetector(
+            onTap: onViewStatistics,
+            child: _ProgressRow(
+              label: 'Actividades pendientes',
+              value: totalCount > 0 ? pendingCount / totalCount : 0,
+              color: AppTheme.pending,
+              count: pendingCount,
+              total: totalCount,
+            ),
           ),
 
           const SizedBox(height: 8),
 
-          _ProgressRow(
-            label: 'Actividades completadas',
-            value: totalCount > 0 ? completedCount / totalCount : 0,
-            color: AppTheme.completed,
-            count: completedCount,
-            total: totalCount,
+          GestureDetector(
+            onTap: onViewStatistics,
+            child: _ProgressRow(
+              label: 'Actividades completadas',
+              value: totalCount > 0 ? completedCount / totalCount : 0,
+              color: AppTheme.completed,
+              count: completedCount,
+              total: totalCount,
+            ),
           ),
 
           // Siguiente actividad
@@ -158,7 +166,7 @@ class StreakBanner extends StatelessWidget {
 
 class _ProgressRow extends StatelessWidget {
   final String label;
-  final double value;
+  final double value; // 0.0 – 1.0
   final Color color;
   final int count;
   final int total;
@@ -179,26 +187,32 @@ class _ProgressRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: Theme.of(context).textTheme.bodyMedium),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
               const SizedBox(height: 4),
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: value,
-                  backgroundColor: color.withValues(alpha: 0.15),
-                  valueColor: AlwaysStoppedAnimation<Color>(color),
-                  minHeight: 6,
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0, end: value),
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, animatedValue, _) {
+                    return LinearProgressIndicator(
+                      value: animatedValue,
+                      backgroundColor: color.withValues(alpha: 0.15),
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                      minHeight: 6,
+                    );
+                  },
                 ),
               ),
             ],
           ),
         ),
         const SizedBox(width: 12),
-        const Icon(
-          Icons.arrow_forward_ios_rounded,
-          size: 14,
-          color: AppTheme.textSecondary,
-        ),
+        const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppTheme.textSecondary),
       ],
     );
   }

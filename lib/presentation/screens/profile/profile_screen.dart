@@ -6,6 +6,7 @@ import 'package:habitos_app/domain/entities/user_profile.dart';
 import 'package:habitos_app/presentation/providers/providers.dart';
 import 'package:habitos_app/presentation/views/profile/profile_view.dart';
 import 'package:habitos_app/presentation/widgets/shared/bottom_nav_bar.dart';
+import 'package:habitos_app/presentation/screens/pairing/pair_watch_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -35,12 +36,78 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _openEditProfile(BuildContext context, WidgetRef ref, UserProfile? profile) {
+  void _openEditProfile(
+      BuildContext context, WidgetRef ref, UserProfile? profile) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _EditProfileSheet(profile: profile),
+    );
+  }
+
+  void _openThemePicker(BuildContext context, WidgetRef ref) {
+    final current = ref.read(themeModeProvider);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: const BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: AppTheme.divider,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Tema de la app',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(height: 8),
+            _ThemeOptionTile(
+              icon: Icons.brightness_auto_rounded,
+              label: 'Predeterminado del sistema',
+              selected: current == ThemeMode.system,
+              onTap: () {
+                ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.system);
+                Navigator.of(context).pop();
+              },
+            ),
+            _ThemeOptionTile(
+              icon: Icons.light_mode_rounded,
+              label: 'Claro',
+              selected: current == ThemeMode.light,
+              onTap: () {
+                ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.light);
+                Navigator.of(context).pop();
+              },
+            ),
+            _ThemeOptionTile(
+              icon: Icons.dark_mode_rounded,
+              label: 'Oscuro',
+              selected: current == ThemeMode.dark,
+              onTap: () {
+                ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.dark);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -51,46 +118,76 @@ class ProfileScreen extends ConsumerWidget {
       orElse: () => null,
     );
 
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        leading: const BackButton(),
-        title: const Text('Tu Perfil'),
-        backgroundColor: AppTheme.surface,
-        elevation: 0,
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_horiz_rounded),
-            onSelected: (value) {
-              if (value == 'edit') {
-                _openEditProfile(context, ref, profile);
-              } else if (value == 'logout') {
-                _confirmLogout(context, ref);
-              }
-            },
-            itemBuilder: (_) => [
-              const PopupMenuItem(
-                value: 'edit',
-                child: Row(children: [
-                  Icon(Icons.edit_outlined, size: 18),
-                  SizedBox(width: 10),
-                  Text('Editar perfil'),
-                ]),
-              ),
-              const PopupMenuItem(
-                value: 'logout',
-                child: Row(children: [
-                  Icon(Icons.logout_rounded, size: 18, color: Colors.red),
-                  SizedBox(width: 10),
-                  Text('Cerrar sesión', style: TextStyle(color: Colors.red)),
-                ]),
-              ),
-            ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) context.go(AppConstants.homeRoute);
+      },
+      child: Scaffold(
+        backgroundColor: AppTheme.background,
+        appBar: AppBar(
+          leading: BackButton(
+            onPressed: () => context.go(AppConstants.homeRoute),
           ),
-        ],
+          title: const Text('Tu Perfil'),
+          backgroundColor: AppTheme.surface,
+          elevation: 0,
+          actions: [
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_horiz_rounded),
+              onSelected: (value) {
+                if (value == 'edit') {
+                  _openEditProfile(context, ref, profile);
+                } else if (value == 'theme') {
+                  _openThemePicker(context, ref);
+                } else if (value == 'pair_watch') {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const PairWatchScreen()),
+                  );
+                } else if (value == 'logout') {
+                  _confirmLogout(context, ref);
+                }
+              },
+              itemBuilder: (_) => [
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: Row(children: [
+                    Icon(Icons.edit_outlined, size: 18),
+                    SizedBox(width: 10),
+                    Text('Editar perfil'),
+                  ]),
+                ),
+                const PopupMenuItem(
+                  value: 'theme',
+                  child: Row(children: [
+                    Icon(Icons.dark_mode_outlined, size: 18, color: AppTheme.primary),
+                    SizedBox(width: 10),
+                    Text('Tema de la app'),
+                  ]),
+                ),
+                const PopupMenuItem(
+                  value: 'pair_watch',
+                  child: Row(children: [
+                    Icon(Icons.watch_outlined, size: 18, color: AppTheme.primary),
+                    SizedBox(width: 10),
+                    Text('Vincular smartwatch'),
+                  ]),
+                ),
+                const PopupMenuItem(
+                  value: 'logout',
+                  child: Row(children: [
+                    Icon(Icons.logout_rounded, size: 18, color: Colors.red),
+                    SizedBox(width: 10),
+                    Text('Cerrar sesión', style: TextStyle(color: Colors.red)),
+                  ]),
+                ),
+              ],
+            ),
+          ],
+        ),
+        body: const ProfileView(),
+        bottomNavigationBar: const CustomBottomNavBar(currentIndex: 3),
       ),
-      body: const ProfileView(),
-      bottomNavigationBar: const CustomBottomNavBar(currentIndex: 3),
     );
   }
 }
@@ -111,17 +208,18 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   late final TextEditingController _weightCtrl;
   late final TextEditingController _ageCtrl;
   bool _isSaving = false;
+  String? _nameError;
 
   @override
   void initState() {
     super.initState();
     _nameCtrl   = TextEditingController(text: widget.profile?.name ?? '');
     _heightCtrl = TextEditingController(
-        text: widget.profile?.heightCm.toStringAsFixed(0) ?? '');
+        text: widget.profile?.heightCm?.toStringAsFixed(0) ?? '');
     _weightCtrl = TextEditingController(
-        text: widget.profile?.weightKg.toStringAsFixed(0) ?? '');
+        text: widget.profile?.weightKg?.toStringAsFixed(0) ?? '');
     _ageCtrl    = TextEditingController(
-        text: widget.profile?.ageYears.toString() ?? '');
+        text: widget.profile?.ageYears?.toString() ?? '');
   }
 
   @override
@@ -137,11 +235,10 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
     final weight = double.tryParse(_weightCtrl.text.trim());
     final age    = int.tryParse(_ageCtrl.text.trim());
 
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('El nombre no puede estar vacío')));
-      return;
-    }
+    setState(() {
+      _nameError = name.isEmpty ? 'El nombre es obligatorio' : null;
+    });
+    if (_nameError != null) return;
 
     setState(() => _isSaving = true);
     await ref.read(profileProvider.notifier).update(
@@ -179,7 +276,11 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                   color: AppTheme.textPrimary)),
           const SizedBox(height: 20),
 
-          _buildField('Nombre', _nameCtrl, TextInputType.name),
+          _buildField('Nombre', _nameCtrl, TextInputType.name,
+              errorText: _nameError,
+              onChanged: (_) {
+                if (_nameError != null) setState(() => _nameError = null);
+              }),
           const SizedBox(height: 12),
           Row(children: [
             Expanded(child: _buildField('Altura (cm)', _heightCtrl,
@@ -227,14 +328,16 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   }
 
   Widget _buildField(String label, TextEditingController ctrl,
-      TextInputType keyboard) {
+      TextInputType keyboard, {String? errorText, ValueChanged<String>? onChanged}) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(label, style: const TextStyle(fontSize: 13,
           fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
       const SizedBox(height: 6),
       TextField(
         controller: ctrl, keyboardType: keyboard,
+        onChanged: onChanged,
         decoration: InputDecoration(
+          errorText: errorText,
           filled: true, fillColor: AppTheme.surface,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: AppTheme.divider)),
@@ -246,5 +349,37 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
         ),
       ),
     ]);
+  }
+}
+
+class _ThemeOptionTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ThemeOptionTile({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon, color: selected ? AppTheme.primary : AppTheme.textSecondary),
+      title: Text(
+        label,
+        style: TextStyle(
+          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+          color: selected ? AppTheme.primary : AppTheme.textPrimary,
+        ),
+      ),
+      trailing: selected
+          ? const Icon(Icons.check_rounded, color: AppTheme.primary, size: 20)
+          : null,
+      onTap: onTap,
+    );
   }
 }

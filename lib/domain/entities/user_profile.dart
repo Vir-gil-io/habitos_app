@@ -3,9 +3,9 @@ class UserProfile {
   final String name;
   final String? avatarUrl;
   final DateTime joinedAt;
-  final double heightCm;
-  final double weightKg;
-  final int ageYears;
+  final double? heightCm;
+  final double? weightKg;
+  final int? ageYears;
   final int globalStreakDays;
   final int totalStepsWeek;
   final double totalCaloriesWeek;
@@ -16,12 +16,16 @@ class UserProfile {
     required this.name,
     this.avatarUrl,
     required this.joinedAt,
-    this.heightCm = 170,
-    this.weightKg = 70,
-    this.ageYears = 25,
+    this.heightCm,
+    this.weightKg,
+    this.ageYears,
     this.globalStreakDays = 0,
     this.totalStepsWeek = 0,
     this.totalCaloriesWeek = 0,
     this.totalDistanceMilesWeek = 0,
   });
+
+  /// true si el usuario aún no ha completado sus datos físicos
+  bool get isMissingPhysicalData =>
+      heightCm == null || weightKg == null || ageYears == null;
 }

@@ -7,7 +7,8 @@ class HabitModel {
   final double currentValue;
   final bool isActive;
   final int streakDays;
-  final String? scheduledTime; // ISO string
+  final String? scheduledTime;
+  final List<int> repeatDays;
 
   const HabitModel({
     required this.id,
@@ -19,6 +20,7 @@ class HabitModel {
     this.isActive = false,
     this.streakDays = 0,
     this.scheduledTime,
+    this.repeatDays = const [1, 2, 3, 4, 5, 6, 7],
   });
 
   factory HabitModel.fromJson(Map<String, dynamic> json) => HabitModel(
@@ -31,6 +33,10 @@ class HabitModel {
         isActive: json['isActive'] as bool? ?? false,
         streakDays: json['streakDays'] as int? ?? 0,
         scheduledTime: json['scheduledTime'] as String?,
+        repeatDays: (json['repeatDays'] as List?)
+                ?.map((e) => e as int)
+                .toList() ??
+            const [1, 2, 3, 4, 5, 6, 7],
       );
 
   Map<String, dynamic> toJson() => {
@@ -43,5 +49,6 @@ class HabitModel {
         'isActive': isActive,
         'streakDays': streakDays,
         'scheduledTime': scheduledTime,
+        'repeatDays': repeatDays,
       };
 }

@@ -15,6 +15,7 @@ class HabitMapper {
         scheduledTime: model.scheduledTime != null
             ? DateTime.tryParse(model.scheduledTime!)
             : null,
+        repeatDays: model.repeatDays,
       );
 
   static HabitModel toModel(Habit entity) => HabitModel(
@@ -27,6 +28,7 @@ class HabitMapper {
         isActive: entity.isActive,
         streakDays: entity.streakDays,
         scheduledTime: entity.scheduledTime?.toIso8601String(),
+        repeatDays: entity.repeatDays,
       );
 
   // ── Desde/hacia Supabase (snake_case) ────────────────────────────────────
@@ -45,6 +47,8 @@ class HabitMapper {
       }
     }
 
+    final rawRepeatDays = json['repeat_days'] as List?;
+
     return Habit(
       id: json['id'] as String,
       name: json['name'] as String,
@@ -57,7 +61,11 @@ class HabitMapper {
       scheduledTime: json['scheduled_time'] != null
           ? DateTime.tryParse(json['scheduled_time'] as String)
           : null,
+      repeatDays: rawRepeatDays != null
+          ? rawRepeatDays.map((e) => (e as num).toInt()).toList()
+          : const [1, 2, 3, 4, 5, 6, 7],
     );
+
   }
 
   static Map<String, dynamic> toSupabase(Habit entity, String userId) => {
@@ -71,6 +79,7 @@ class HabitMapper {
         'streak_days': entity.streakDays,
         'scheduled_time': entity.scheduledTime?.toIso8601String(),
         'last_reset_date': _todayStr(),
+        'repeat_days': entity.repeatDays,
       };
 
   static String _todayStr() {

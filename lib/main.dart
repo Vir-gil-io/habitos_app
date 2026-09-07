@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:habitos_app/config/config.dart';
+import 'presentation/providers/providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,18 +25,26 @@ Future<void> main() async {
     debugPrint('Error de conexión a Supabase: $e');
   }
 
-  runApp(const ProviderScope(child: HabitosApp()));
+  runApp(
+    const ProviderScope(
+      child: HabitosApp(),
+    ),
+  );
 }
 
-class HabitosApp extends StatelessWidget {
+class HabitosApp extends ConsumerWidget {
   const HabitosApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+
     return MaterialApp.router(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme().getTheme(),
+      darkTheme: AppTheme().getDarkTheme(),
+      themeMode: themeMode,
       routerConfig: appRouter,
     );
   }

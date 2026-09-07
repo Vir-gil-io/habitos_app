@@ -55,9 +55,11 @@ class SupabaseHabitsDatasourceImpl implements HabitsDatasource {
     return HabitMapper.fromSupabase(row);
   }
 
-  @override
+    @override
   Future<Habit> toggleActive(String habitId) async {
-    // Leer estado actual
+    // Tap corto: SOLO inicia o pausa la actividad, nunca cambia el progreso
+    // ni marca como completado (evita que "pausar dos veces" complete el
+    // hábito por accidente).
     final current = await _client
         .from('habits')
         .select('is_active')
@@ -68,6 +70,35 @@ class SupabaseHabitsDatasourceImpl implements HabitsDatasource {
     final row = await _client
         .from('habits')
         .update({'is_active': !(current['is_active'] as bool)})
+        .eq('id', habitId)
+        .eq('user_id', _userId)
+        .select()
+        .single();
+
+    return HabitMapper.fromSupabase(row);
+  }
+
+  @override
+  Future<Habit> toggleCompleted(String habitId) async {
+    // Mantener presionado: marca o desmarca como completado explícitamente
+    final current = await _client
+        .from('habits')
+        .select()
+        .eq('id', habitId)
+        .eq('user_id', _userId)
+        .single();
+
+    final goalValue    = (current['goal_value'] as num).toDouble();
+    final currentValue = (current['current_value'] as num).toDouble();
+    final isCompleted  = currentValue >= goalValue;
+
+    final updates = isCompleted
+        ? {'current_value': 0, 'is_active': false}
+        : {'current_value': goalValue, 'is_active': false};
+
+    final row = await _client
+        .from('habits')
+        .update(updates)
         .eq('id', habitId)
         .eq('user_id', _userId)
         .select()
@@ -108,5 +139,14 @@ class SupabaseHabitsDatasourceImpl implements HabitsDatasource {
     return '${now.year}-'
         '${now.month.toString().padLeft(2, '0')}-'
         '${now.day.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Future<void> pauseHabit(String habitId) async {
+    await _client
+        .from('habits')
+        .update({'is_active': false})
+        .eq('id', habitId)
+        .eq('user_id', _userId);
   }
 }

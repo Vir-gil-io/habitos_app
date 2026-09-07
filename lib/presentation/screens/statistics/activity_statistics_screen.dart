@@ -14,35 +14,23 @@ class ActivityStatisticsScreen extends ConsumerWidget {
     final habitsAsync = ref.watch(habitsProvider);
     final textTheme = Theme.of(context).textTheme;
 
-    // ── Datos reales calculados de los hábitos ──────────────────────────
-    final allHabits = habitsAsync.maybeWhen(data: (h) => h, orElse: () => []);
+    final allHabits =
+        habitsAsync.maybeWhen(data: (h) => h, orElse: () => <Habit>[]);
     final completed = allHabits.where((h) => h.isCompleted).length;
-    final total = allHabits.length;
+    final total     = allHabits.length;
 
-    // Conteo por categoría para las barras
-    int cognitive = 0, physical = 0, hydration = 0, productivity = 0, rest = 0;
+    int cognitive = 0, physical = 0, hydration = 0,
+        productivity = 0, rest = 0;
     for (final h in allHabits) {
       switch (h.category) {
-        case HabitCategory.cognitive:
-          cognitive++;
-          break;
-        case HabitCategory.physical:
-          physical++;
-          break;
-        case HabitCategory.hydration:
-          hydration++;
-          break;
-        case HabitCategory.productivity:
-          productivity++;
-          break;
-        case HabitCategory.rest:
-          rest++;
-          break;
+        case HabitCategory.cognitive:    cognitive++;    break;
+        case HabitCategory.physical:     physical++;     break;
+        case HabitCategory.hydration:    hydration++;    break;
+        case HabitCategory.productivity: productivity++; break;
+        case HabitCategory.rest:         rest++;         break;
       }
     }
-    final cats = [cognitive, physical, hydration, productivity, rest];
-    final maxCat = cats.reduce((a, b) => a > b ? a : b);
-    double pct(int n) => maxCat == 0 ? 0 : n / maxCat;
+    double pct(int n) => total == 0 ? 0 : n / total;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -62,86 +50,86 @@ class ActivityStatisticsScreen extends ConsumerWidget {
                 children: [
                   const Text('🔥', style: TextStyle(fontSize: 36)),
                   const SizedBox(height: 4),
-                  Text(
-                    '$completed de $total hábitos completados hoy',
-                    style: textTheme.titleLarge,
-                  ),
+                  const Text('🔥', style: TextStyle(fontSize: 36)),
                   const SizedBox(height: 4),
-                  Text(
-                    'Calorías y pasos disponibles cuando se conecte el wearable',
-                    style: textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
+                  Text('$completed de $total hábitos completados hoy',
+                      style: textTheme.titleLarge),
+                  const SizedBox(height: 4),
+                  Builder(builder: (context) {
+                    final activity = ref.watch(wearableActivityProvider).maybeWhen(
+                      data: (a) => a,
+                      orElse: () => null,
+                    );
+                    final cal = activity?.todayCalories ?? 0;
+                    return Text(
+                      cal > 0
+                          ? '${cal.toStringAsFixed(0)} kcal quemadas hoy'
+                          : 'Calorías disponibles cuando conectes el wearable',
+                      style: textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                    );
+                  }),
                 ],
               ),
             ),
             const SizedBox(height: 20),
 
-            _CategoryBar(
-              label: 'Cognitivo',
-              percent: pct(cognitive),
-              color: AppTheme.primary,
-            ),
-            _CategoryBar(
-              label: 'Físico',
-              percent: pct(physical),
-              color: AppTheme.completed,
-            ),
-            _CategoryBar(
-              label: 'Hidratación',
-              percent: pct(hydration),
-              color: const Color(0xFF0984E3),
-            ),
-            _CategoryBar(
-              label: 'Productividad',
-              percent: pct(productivity),
-              color: AppTheme.pending,
-            ),
-            _CategoryBar(
-              label: 'Descanso',
-              percent: pct(rest),
-              color: AppTheme.streak,
-            ),
+            _CategoryBar(label: 'Cognitivo',     percent: pct(cognitive),    color: AppTheme.primary),
+            _CategoryBar(label: 'Físico',        percent: pct(physical),     color: AppTheme.completed),
+            _CategoryBar(label: 'Hidratación',   percent: pct(hydration),    color: const Color(0xFF0984E3)),
+            _CategoryBar(label: 'Productividad', percent: pct(productivity), color: AppTheme.pending),
+            _CategoryBar(label: 'Descanso',      percent: pct(rest),         color: AppTheme.streak),
 
             const SizedBox(height: 20),
 
             // Distancia
-            Row(
-              children: [
-                const Icon(Icons.location_on_outlined, color: AppTheme.primary),
-                const SizedBox(width: 6),
-                Text('you have covered ', style: textTheme.bodyLarge),
-                Text(
-                  '14.8 mi',
-                  style: textTheme.titleMedium?.copyWith(
-                    color: AppTheme.primary,
+            Builder(builder: (context) {
+              final activity = ref.watch(wearableActivityProvider).maybeWhen(
+                data: (a) => a,
+                orElse: () => null,
+              );
+              final km = activity?.todayDistanceKm ?? 0;
+              return Row(
+                children: [
+                  const Icon(Icons.location_on_outlined, color: AppTheme.primary),
+                  const SizedBox(width: 6),
+                  Text('Has recorrido ', style: textTheme.bodyLarge),
+                  Text(
+                    '${km.toStringAsFixed(2)} km',
+                    style: textTheme.titleMedium?.copyWith(color: AppTheme.primary),
                   ),
-                ),
-              ],
-            ),
+                ],
+              );
+            }),
 
             const SizedBox(height: 12),
 
             // Pasos y tiempo
-            Row(
-              children: [
-                Expanded(
-                  child: _MetricCard(
-                    icon: Icons.directions_walk_rounded,
-                    value: '-',
-                    label: 'pasos (wearable)',
+            Builder(builder: (context) {
+              final activity = ref.watch(wearableActivityProvider).maybeWhen(
+                data: (a) => a,
+                orElse: () => null,
+              );
+              return Row(
+                children: [
+                  Expanded(
+                    child: _MetricCard(
+                      icon: Icons.directions_walk_rounded,
+                      value: activity != null ? '${activity.todaySteps}' : '—',
+                      label: 'pasos',
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _MetricCard(
-                    icon: Icons.access_time_rounded,
-                    value: '-',
-                    label: 'tiempo (wearable)',
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _MetricCard(
+                      icon: Icons.access_time_rounded,
+                      value: activity?.todayTimeLabel ?? '—',
+                      label: 'tiempo activo',
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              );
+            }),
 
             const SizedBox(height: 24),
             Text('Your Activities', style: textTheme.titleLarge),
@@ -159,6 +147,9 @@ class ActivityStatisticsScreen extends ConsumerWidget {
                         onToggle: () => ref
                             .read(habitsProvider.notifier)
                             .toggleActive(h.id),
+                        onToggleCompleted: () => ref
+                            .read(habitsProvider.notifier)
+                            .toggleCompleted(h.id),
                         onTap: () => showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,

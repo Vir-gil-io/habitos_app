@@ -691,12 +691,13 @@ class _DayBottomSheetState extends ConsumerState<_DayBottomSheet> {
 
           // Cabecera del día
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: isToday
                         ? AppTheme.primary
@@ -707,48 +708,52 @@ class _DayBottomSheetState extends ConsumerState<_DayBottomSheet> {
                     child: Text(
                       '${widget.day.day}',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: isToday ? Colors.white : AppTheme.primary,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isToday ? 'Hoy' : _fullDateLabel(widget.day),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        isToday ? 'Hoy' : _fullDateLabel(widget.day),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    Text(
-                      '${reminders.length} recordatorio${reminders.length != 1 ? 's' : ''}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppTheme.textSecondary,
+                      Text(
+                        '${reminders.length} recordatorio${reminders.length != 1 ? 's' : ''}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textSecondary,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const Spacer(),
-                // Botón agregar
+                const SizedBox(width: 8),
+                // Botón agregar — compacto, tamaño fijo, no se desborda
                 if (!_showForm)
-                  FilledButton.icon(
+                  IconButton.filled(
                     onPressed: () => setState(() => _showForm = true),
-                    icon: const Icon(Icons.add_rounded, size: 18),
-                    label: const Text('Agregar'),
-                    style: FilledButton.styleFrom(
+                    icon: const Icon(Icons.add_rounded, size: 20),
+                    style: IconButton.styleFrom(
                       backgroundColor: AppTheme.primary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
-                      ),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(36, 36),
+                      padding: EdgeInsets.zero,
                     ),
+                    tooltip: 'Agregar',
                   ),
               ],
             ),
@@ -817,8 +822,8 @@ class _DayBottomSheetState extends ConsumerState<_DayBottomSheet> {
                   },
                   onEdit: () {
                     setState(() {
+                      _editingReminder = reminders[i];
                       _showForm = true;
-                      _editingReminder = reminders[i]; // ← ver abajo
                     });
                   },
                 ),
@@ -861,14 +866,13 @@ class _SheetReminderTile extends StatelessWidget {
   const _SheetReminderTile({
     required this.reminder,
     required this.onDelete,
-    required this.onEdit
+    required this.onEdit,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(12),
@@ -876,64 +880,89 @@ class _SheetReminderTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            _categoryIcon(reminder.category),
-            size: 20,
-            color: _categoryColor(reminder.category),
-          ),
-          const SizedBox(width: 10),
+          // Toda esta zona es tocable → abre edición
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  reminder.title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
-                  ),
-                ),
-                if (reminder.time != null)
-                  Text(
-                    reminder.timeLabel,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppTheme.textSecondary,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: onEdit,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                child: Row(
+                  children: [
+                    Icon(
+                      _categoryIcon(reminder.category),
+                      size: 20,
+                      color: _categoryColor(reminder.category),
                     ),
-                  ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-            decoration: BoxDecoration(
-              color: _categoryColor(reminder.category).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              reminder.categoryLabel,
-              style: TextStyle(
-                fontSize: 10,
-                color: _categoryColor(reminder.category),
-                fontWeight: FontWeight.w500,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            reminder.title,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          if (reminder.time != null)
+                            Text(
+                              reminder.timeLabel,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: _categoryColor(reminder.category)
+                            .withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        reminder.categoryLabel,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: _categoryColor(reminder.category),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          Column(children: [
-            GestureDetector(
-              onTap: onEdit, // ← callback nuevo
-              child: const Icon(Icons.edit_outlined, size: 16,
-                  color: AppTheme.primary),
-            ),
-            const SizedBox(height: 4),
-            GestureDetector(
+          // Botón eliminar — zona propia, grande, independiente del gesto de editar
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius:
+                  const BorderRadius.horizontal(right: Radius.circular(12)),
               onTap: onDelete,
-              child: const Icon(Icons.close_rounded, size: 16,
-                  color: AppTheme.textSecondary),
+              child: Container(
+                width: 52,
+                height: 52,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  border: Border(left: BorderSide(color: AppTheme.divider)),
+                ),
+                child: const Icon(
+                  Icons.delete_outline_rounded,
+                  size: 24,
+                  color: AppTheme.pending,
+                ),
+              ),
             ),
-          ]),
+          ),
         ],
       ),
     );
@@ -941,27 +970,26 @@ class _SheetReminderTile extends StatelessWidget {
 
   IconData _categoryIcon(ReminderCategory cat) {
     return switch (cat) {
-      ReminderCategory.habit => Icons.repeat_rounded,
-      ReminderCategory.exercise => Icons.fitness_center_rounded,
-      ReminderCategory.hydration => Icons.water_drop_rounded,
-      ReminderCategory.rest => Icons.bedtime_rounded,
+      ReminderCategory.habit        => Icons.repeat_rounded,
+      ReminderCategory.exercise     => Icons.fitness_center_rounded,
+      ReminderCategory.hydration    => Icons.water_drop_rounded,
+      ReminderCategory.rest         => Icons.bedtime_rounded,
       ReminderCategory.productivity => Icons.school_rounded,
-      ReminderCategory.other => Icons.event_note_rounded,
+      ReminderCategory.other        => Icons.event_note_rounded,
     };
   }
 
   Color _categoryColor(ReminderCategory cat) {
     return switch (cat) {
-      ReminderCategory.habit => AppTheme.primary,
-      ReminderCategory.exercise => AppTheme.completed,
-      ReminderCategory.hydration => const Color(0xFF0984E3),
-      ReminderCategory.rest => const Color(0xFF6C5CE7),
+      ReminderCategory.habit        => AppTheme.primary,
+      ReminderCategory.exercise     => AppTheme.completed,
+      ReminderCategory.hydration    => const Color(0xFF0984E3),
+      ReminderCategory.rest         => const Color(0xFF6C5CE7),
       ReminderCategory.productivity => AppTheme.pending,
-      ReminderCategory.other => AppTheme.textSecondary,
+      ReminderCategory.other        => AppTheme.textSecondary,
     };
   }
 }
-
 // ── Formulario de nuevo recordatorio ────────────────────────────────────────
 
 class _ReminderForm extends StatefulWidget {
@@ -1194,13 +1222,14 @@ class _ReminderFormState extends State<_ReminderForm> {
                   onPressed: widget.onCancel,
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: AppTheme.divider),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: const Text(
                     'Cancelar',
-                    style: TextStyle(color: AppTheme.textSecondary),
+                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
                   ),
                 ),
               ),
@@ -1210,16 +1239,17 @@ class _ReminderFormState extends State<_ReminderForm> {
                   onPressed: _save,
                   style: FilledButton.styleFrom(
                     backgroundColor: AppTheme.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Guardar'),
+                  child: const Text('Guardar', style: TextStyle(fontSize: 13)),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
         ],
       ),
     );
