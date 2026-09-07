@@ -68,6 +68,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   totalCount: pending.length + completed.length,
                   nextHabitName: nextHabit?.name,
                   nextHabitTime: nextHabit?.scheduledTime,
+                  onViewStatistics: () =>
+                      context.go('${AppConstants.homeRoute}/statistics'),
                 ),
 
                 const SizedBox(height: 24),
@@ -111,7 +113,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
                               onToggle: () => ref
                                   .read(habitsProvider.notifier)
                                   .toggleActive(h.id),
-                              onTap: () => showModalBottomSheet( // ← AGREGAR
+                              onToggleCompleted: () => ref
+                                  .read(habitsProvider.notifier)
+                                  .toggleCompleted(h.id),
+                              onTap: () => showModalBottomSheet(
                                 context: context,
                                 isScrollControlled: true,
                                 backgroundColor: Colors.transparent,
@@ -146,14 +151,14 @@ class _HomeAppBar extends ConsumerWidget { // ← cambiar StatelessWidget por Co
       child: Row(
         children: [
           CircleAvatar(
-            radius: 20,
-            backgroundColor: AppTheme.primary.withValues(alpha: 0.2),
-            child: const Text(
-              'JW',
-              style: TextStyle(
+            radius: 48,
+            backgroundColor: AppTheme.primary.withValues(alpha: 0.15),
+            child: Text(
+              name.isNotEmpty ? name[0].toUpperCase() : 'U',
+              style: const TextStyle(
                 color: AppTheme.primary,
                 fontWeight: FontWeight.bold,
-                fontSize: 13,
+                fontSize: 28,
               ),
             ),
           ),
@@ -173,18 +178,12 @@ class _HomeAppBar extends ConsumerWidget { // ← cambiar StatelessWidget por Co
                   ),
                 ),
                 Text(
-                  'Hola, $name',
+                  'Hola, ${name.split(' ').first} 👋',
                   style: Theme.of(context).textTheme.bodyMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
-            ),
-          ),
-
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.settings_outlined,
-              color: AppTheme.textSecondary,
             ),
           ),
         ],

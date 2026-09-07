@@ -22,6 +22,13 @@ class HabitsRepositoryImpl implements HabitsRepository {
       datasource.toggleActive(habitId);
 
   @override
+  Future<Habit> toggleCompleted(String habitId) =>
+      datasource.toggleCompleted(habitId);
+
+  @override
+  Future<void> pauseHabit(String habitId) => datasource.pauseHabit(habitId);
+
+  @override
   Future<void> saveHabit(Habit habit) => datasource.saveHabit(habit);
 
   @override

@@ -4,7 +4,9 @@ abstract class HabitsRepository {
   Future<List<Habit>> getTodayHabits();
   Future<List<Habit>> getAllHabits();
   Future<Habit> updateProgress(String habitId, double newValue);
+  Future<Habit> toggleCompleted(String habitId);
   Future<Habit> toggleActive(String habitId);
+  Future<void> pauseHabit(String habitId);
   Future<void> saveHabit(Habit habit);
   Future<void> deleteHabit(String habitId);
 }

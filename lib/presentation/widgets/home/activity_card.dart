@@ -5,105 +5,132 @@ import 'package:habitos_app/domain/entities/habit.dart';
 class ActivityCard extends StatelessWidget {
   final Habit habit;
   final VoidCallback onToggle;
-  final VoidCallback? onTap; // ← AGREGAR
+  final VoidCallback onToggleCompleted;
+  final VoidCallback? onTap;
 
   const ActivityCard({
     super.key,
     required this.habit,
     required this.onToggle,
-    this.onTap, // ← AGREGAR
+    required this.onToggleCompleted,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: _categoryColor(habit.category).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                _categoryIcon(habit.category),
-                color: _categoryColor(habit.category),
-                size: 22,
-              ),
-            ),
-
-            const SizedBox(width: 12),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (habit.scheduledTime != null)
-                    Text(
-                      _formatTime(habit.scheduledTime!),
-                      style: textTheme.labelSmall?.copyWith(
-                        color: AppTheme.textSecondary,
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primary.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: onTap,
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: _categoryColor(
+                          habit.category,
+                        ).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        _categoryIcon(habit.category),
+                        color: _categoryColor(habit.category),
+                        size: 22,
                       ),
                     ),
-                  Text(
-                    habit.name,
-                    style: textTheme.titleMedium?.copyWith(
-                      decoration: habit.isCompleted
-                          ? TextDecoration.lineThrough
-                          : null,
-                      color: habit.isCompleted
-                          ? AppTheme.textSecondary
-                          : AppTheme.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    habit.currentLabel,
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.primary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: habit.progress,
-                      backgroundColor: AppTheme.divider,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        habit.isCompleted
-                            ? AppTheme.completed
-                            : AppTheme.primary,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (habit.scheduledTime != null)
+                            Text(
+                              _formatTime(habit.scheduledTime!),
+                              style: textTheme.labelSmall?.copyWith(
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                          AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 350),
+                            curve: Curves.easeOut,
+                            style:
+                                textTheme.titleMedium?.copyWith(
+                                  decoration: habit.isCompleted
+                                      ? TextDecoration.lineThrough
+                                      : TextDecoration.none,
+                                  color: habit.isCompleted
+                                      ? AppTheme.textSecondary
+                                      : AppTheme.textPrimary,
+                                ) ??
+                                const TextStyle(),
+                            child: Text(habit.name),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            habit.currentLabel,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: AppTheme.primary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: TweenAnimationBuilder<double>(
+                              tween: Tween<double>(
+                                begin: 0,
+                                end: habit.progress,
+                              ),
+                              duration: const Duration(milliseconds: 500),
+                              curve: Curves.easeOutCubic,
+                              builder: (context, animatedValue, _) {
+                                return LinearProgressIndicator(
+                                  value: animatedValue,
+                                  backgroundColor: AppTheme.divider,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    habit.isCompleted
+                                        ? AppTheme.completed
+                                        : AppTheme.primary,
+                                  ),
+                                  minHeight: 4,
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
-                      minHeight: 4,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-
-            const SizedBox(width: 12),
-
-            GestureDetector(
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 14),
+            child: GestureDetector(
               onTap: onToggle,
+              onLongPress: onToggleCompleted,
               child: Container(
                 width: 40,
                 height: 40,
@@ -124,8 +151,8 @@ class ActivityCard extends StatelessWidget {
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

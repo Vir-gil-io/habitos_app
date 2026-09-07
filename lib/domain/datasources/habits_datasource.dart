@@ -5,6 +5,8 @@ abstract class HabitsDatasource {
   Future<List<Habit>> getAllHabits();
   Future<Habit> updateProgress(String habitId, double newValue);
   Future<Habit> toggleActive(String habitId);
+  Future<Habit> toggleCompleted(String habitId);
+  Future<void> pauseHabit(String habitId);
   Future<void> saveHabit(Habit habit);
   Future<void> deleteHabit(String habitId);
 }

@@ -27,9 +27,9 @@ class ProfileNotifier extends StateNotifier<AsyncValue<UserProfile?>> {
         id: row['id'] as String,
         name: row['name'] as String? ?? 'Usuario',
         joinedAt: DateTime.parse(row['created_at'] as String),
-        heightCm: (row['height_cm'] as num?)?.toDouble() ?? 170,
-        weightKg: (row['weight_kg'] as num?)?.toDouble() ?? 70,
-        ageYears: row['age_years'] as int? ?? 25,
+        heightCm: (row['height_cm'] as num?)?.toDouble(),
+        weightKg: (row['weight_kg'] as num?)?.toDouble(),
+        ageYears: row['age_years'] as int?,
         globalStreakDays: row['global_streak_days'] as int? ?? 0,
       ));
     } catch (e, st) {

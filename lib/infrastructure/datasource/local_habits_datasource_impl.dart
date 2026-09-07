@@ -148,4 +148,43 @@ class LocalHabitsDatasourceImpl implements HabitsDatasource {
   Future<void> deleteHabit(String habitId) async {
     _habits.removeWhere((h) => h.id == habitId);
   }
+
+    @override
+  Future<Habit> toggleCompleted(String habitId) async {
+    final index = _habits.indexWhere((h) => h.id == habitId);
+    if (index == -1) throw Exception('Hábito no encontrado: $habitId');
+    final current = _habits[index];
+    final isCompleted = current.currentValue >= current.goalValue;
+    final updated = HabitModel(
+      id: current.id,
+      name: current.name,
+      category: current.category,
+      goalValue: current.goalValue,
+      unit: current.unit,
+      currentValue: isCompleted ? 0 : current.goalValue,
+      isActive: false,
+      streakDays: current.streakDays,
+      scheduledTime: current.scheduledTime,
+    );
+    _habits[index] = updated;
+    return HabitMapper.fromModel(updated);
+  }
+
+    @override
+  Future<void> pauseHabit(String habitId) async {
+    final index = _habits.indexWhere((h) => h.id == habitId);
+    if (index == -1) return;
+    final current = _habits[index];
+    _habits[index] = HabitModel(
+      id: current.id,
+      name: current.name,
+      category: current.category,
+      goalValue: current.goalValue,
+      unit: current.unit,
+      currentValue: current.currentValue,
+      isActive: false,
+      streakDays: current.streakDays,
+      scheduledTime: current.scheduledTime,
+    );
+  }
 }

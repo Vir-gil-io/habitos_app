@@ -12,6 +12,7 @@ class Habit {
   final bool isActive;
   final int streakDays;
   final DateTime? scheduledTime;
+  final List<int> repeatDays; // 1=lunes ... 7=domingo
 
   const Habit({
     required this.id,
@@ -23,6 +24,7 @@ class Habit {
     this.isActive = false,
     this.streakDays = 0,
     this.scheduledTime,
+    this.repeatDays = const [1, 2, 3, 4, 5, 6, 7],
   });
 
   /// Progreso de 0.0 a 1.0
@@ -61,6 +63,16 @@ class Habit {
     }
   }
 
+  bool get isDaily => repeatDays.length >= 7;
+
+  String get repeatLabel {
+    if (isDaily) return 'Diario';
+    if (repeatDays.isEmpty) return 'Sin repetición';
+    const names = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+    final sorted = [...repeatDays]..sort();
+    return sorted.map((d) => names[d - 1]).join(', ');
+  }
+
   Habit copyWith({
     String? id,
     String? name,
@@ -71,6 +83,7 @@ class Habit {
     bool? isActive,
     int? streakDays,
     DateTime? scheduledTime,
+    List<int>? repeatDays,
   }) {
     return Habit(
       id: id ?? this.id,
@@ -82,6 +95,7 @@ class Habit {
       isActive: isActive ?? this.isActive,
       streakDays: streakDays ?? this.streakDays,
       scheduledTime: scheduledTime ?? this.scheduledTime,
+      repeatDays: repeatDays ?? this.repeatDays,
     );
   }
 }
