@@ -221,22 +221,25 @@ class _LogoWidget extends StatelessWidget {
           ),
         ],
       ),
-      child: const Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('🔥', style: TextStyle(fontSize: 36)),
-            SizedBox(height: 2),
-            Text(
-              'HF',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 2,
+      child: Center(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('🔥', style: TextStyle(fontSize: 36)),
+              SizedBox(height: 2),
+              Text(
+                'HF',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

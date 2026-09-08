@@ -170,7 +170,7 @@ class ProfileScreen extends ConsumerWidget {
                   child: Row(children: [
                     Icon(Icons.watch_outlined, size: 18, color: AppTheme.primary),
                     SizedBox(width: 10),
-                    Text('Vincular smartwatch'),
+                    Text('Vincular Dispositivo'),
                   ]),
                 ),
                 const PopupMenuItem(
@@ -367,19 +367,22 @@ class _ThemeOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon, color: selected ? AppTheme.primary : AppTheme.textSecondary),
-      title: Text(
-        label,
-        style: TextStyle(
-          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-          color: selected ? AppTheme.primary : AppTheme.textPrimary,
+    return Material(
+      type: MaterialType.transparency,
+      child: ListTile(
+        leading: Icon(icon, color: selected ? AppTheme.primary : AppTheme.textSecondary),
+        title: Text(
+          label,
+          style: TextStyle(
+            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+            color: selected ? AppTheme.primary : AppTheme.textPrimary,
+          ),
         ),
+        trailing: selected
+            ? const Icon(Icons.check_rounded, color: AppTheme.primary, size: 20)
+            : null,
+        onTap: onTap,
       ),
-      trailing: selected
-          ? const Icon(Icons.check_rounded, color: AppTheme.primary, size: 20)
-          : null,
-      onTap: onTap,
     );
   }
 }

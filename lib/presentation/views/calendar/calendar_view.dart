@@ -401,7 +401,7 @@ class _LegendItem extends StatelessWidget {
 
 // ── Lista de próximos recordatorios ──────────────────────────────────────────
 
-class _UpcomingReminders extends StatelessWidget {
+class _UpcomingReminders extends ConsumerWidget {
   final List<Reminder> reminders;
   final void Function(String id) onDelete;
 
@@ -411,11 +411,10 @@ class _UpcomingReminders extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final now = DateTime.now();
     final upcoming = reminders
-        .where((r) =>
-            r.date.isAfter(now.subtract(const Duration(days: 1))))
+        .where((r) => r.date.isAfter(now.subtract(const Duration(days: 1))))
         .toList()
       ..sort((a, b) => a.date.compareTo(b.date));
 
@@ -475,10 +474,27 @@ class _UpcomingReminders extends StatelessWidget {
               itemBuilder: (context, i) => _ReminderTile(
                 reminder: upcoming[i],
                 onDelete: () => onDelete(upcoming[i].id),
+                onEdit: () => _openEditSheet(context, ref, upcoming[i]),
               ),
             ),
           ),
       ],
+    );
+  }
+
+  void _openEditSheet(BuildContext context, WidgetRef ref, Reminder reminder) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _QuickEditReminderSheet(
+        reminder: reminder,
+        onSave: (updated) async {
+          final notifier = ref.read(remindersProvider.notifier);
+          await notifier.removeReminder(reminder.id);
+          await notifier.addReminder(updated);
+        },
+      ),
     );
   }
 }
@@ -486,8 +502,13 @@ class _UpcomingReminders extends StatelessWidget {
 class _ReminderTile extends StatelessWidget {
   final Reminder reminder;
   final VoidCallback onDelete;
+  final VoidCallback onEdit;
 
-  const _ReminderTile({required this.reminder, required this.onDelete});
+  const _ReminderTile({
+    required this.reminder,
+    required this.onDelete,
+    required this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -498,7 +519,6 @@ class _ReminderTile extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(14),
@@ -512,103 +532,120 @@ class _ReminderTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Ícono de categoría
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: _categoryColor(reminder.category).withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              _categoryIcon(reminder.category),
-              color: _categoryColor(reminder.category),
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-
-          // Contenido
+          // Toda esta zona es tocable → abre edición
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  reminder.title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Row(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: onEdit,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                child: Row(
                   children: [
-                    Icon(
-                      Icons.calendar_today_rounded,
-                      size: 11,
-                      color: isToday ? AppTheme.primary : AppTheme.textSecondary,
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: _categoryColor(reminder.category).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        _categoryIcon(reminder.category),
+                        color: _categoryColor(reminder.category),
+                        size: 20,
+                      ),
                     ),
-                    const SizedBox(width: 3),
-                    Text(
-                      isToday
-                          ? 'Hoy • ${reminder.timeLabel}'
-                          : '${_dateLabel(reminder.date)} • ${reminder.timeLabel}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: isToday
-                            ? AppTheme.primary
-                            : AppTheme.textSecondary,
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            reminder.title,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.calendar_today_rounded,
+                                size: 11,
+                                color: isToday ? AppTheme.primary : AppTheme.textSecondary,
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                isToday
+                                    ? 'Hoy • ${reminder.timeLabel}'
+                                    : '${_dateLabel(reminder.date)} • ${reminder.timeLabel}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: isToday ? AppTheme.primary : AppTheme.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (reminder.description != null &&
+                              reminder.description!.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              reminder.description!,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppTheme.textSecondary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: _categoryColor(reminder.category).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        reminder.categoryLabel,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: _categoryColor(reminder.category),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                if (reminder.description != null &&
-                    reminder.description!.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    reminder.description!,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: AppTheme.textSecondary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ],
+              ),
             ),
           ),
-
-          // Chip de categoría + delete
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: _categoryColor(reminder.category).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
+          // Botón eliminar — zona propia, grande, sin gestos anidados
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: const BorderRadius.horizontal(right: Radius.circular(14)),
+              onTap: onDelete,
+              child: Container(
+                width: 48,
+                height: 48,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  border: Border(left: BorderSide(color: AppTheme.divider)),
                 ),
-                child: Text(
-                  reminder.categoryLabel,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: _categoryColor(reminder.category),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 4),
-              GestureDetector(
-                onTap: onDelete,
                 child: const Icon(
                   Icons.delete_outline_rounded,
-                  size: 18,
-                  color: AppTheme.textSecondary,
+                  size: 20,
+                  color: AppTheme.pending,
                 ),
               ),
-            ],
+            ),
           ),
         ],
       ),
@@ -618,30 +655,30 @@ class _ReminderTile extends StatelessWidget {
   String _dateLabel(DateTime d) {
     const months = [
       'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-      'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+      'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
     ];
     return '${d.day} ${months[d.month - 1]}';
   }
 
   IconData _categoryIcon(ReminderCategory cat) {
     return switch (cat) {
-      ReminderCategory.habit => Icons.repeat_rounded,
-      ReminderCategory.exercise => Icons.fitness_center_rounded,
-      ReminderCategory.hydration => Icons.water_drop_rounded,
-      ReminderCategory.rest => Icons.bedtime_rounded,
+      ReminderCategory.habit        => Icons.repeat_rounded,
+      ReminderCategory.exercise     => Icons.fitness_center_rounded,
+      ReminderCategory.hydration    => Icons.water_drop_rounded,
+      ReminderCategory.rest         => Icons.bedtime_rounded,
       ReminderCategory.productivity => Icons.school_rounded,
-      ReminderCategory.other => Icons.event_note_rounded,
+      ReminderCategory.other        => Icons.event_note_rounded,
     };
   }
 
   Color _categoryColor(ReminderCategory cat) {
     return switch (cat) {
-      ReminderCategory.habit => AppTheme.primary,
-      ReminderCategory.exercise => AppTheme.completed,
-      ReminderCategory.hydration => const Color(0xFF0984E3),
-      ReminderCategory.rest => const Color(0xFF6C5CE7),
+      ReminderCategory.habit        => AppTheme.primary,
+      ReminderCategory.exercise     => AppTheme.completed,
+      ReminderCategory.hydration    => const Color(0xFF0984E3),
+      ReminderCategory.rest         => const Color(0xFF6C5CE7),
       ReminderCategory.productivity => AppTheme.pending,
-      ReminderCategory.other => AppTheme.textSecondary,
+      ReminderCategory.other        => AppTheme.textSecondary,
     };
   }
 }
@@ -1271,6 +1308,271 @@ class _ReminderFormState extends State<_ReminderForm> {
       ReminderCategory.rest => 'Descanso',
       ReminderCategory.productivity => 'Productividad',
       ReminderCategory.other => 'Otro',
+    };
+  }
+}
+// ── Sheet rápido de edición desde "Próximos recordatorios" ──────────────────
+
+class _QuickEditReminderSheet extends StatefulWidget {
+  final Reminder reminder;
+  final Future<void> Function(Reminder updated) onSave;
+
+  const _QuickEditReminderSheet({
+    required this.reminder,
+    required this.onSave,
+  });
+
+  @override
+  State<_QuickEditReminderSheet> createState() => _QuickEditReminderSheetState();
+}
+
+class _QuickEditReminderSheetState extends State<_QuickEditReminderSheet> {
+  late final TextEditingController _titleCtrl;
+  late final TextEditingController _descCtrl;
+  TimeOfDay? _selectedTime;
+  late ReminderCategory _selectedCategory;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleCtrl = TextEditingController(text: widget.reminder.title);
+    _descCtrl = TextEditingController(text: widget.reminder.description ?? '');
+    _selectedTime = widget.reminder.time;
+    _selectedCategory = widget.reminder.category;
+  }
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _descCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime ?? TimeOfDay.now(),
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: const ColorScheme.light(primary: AppTheme.primary),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) setState(() => _selectedTime = picked);
+  }
+
+  Future<void> _save() async {
+    final title = _titleCtrl.text.trim();
+    if (title.isEmpty) return;
+
+    setState(() => _isSaving = true);
+
+    final updated = Reminder(
+      id: 'r_${DateTime.now().millisecondsSinceEpoch}',
+      title: title,
+      date: widget.reminder.date,
+      time: _selectedTime,
+      description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+      category: _selectedCategory,
+    );
+
+    await widget.onSave(updated);
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  String _formatTime(TimeOfDay t) {
+    final h = t.hour;
+    final m = t.minute.toString().padLeft(2, '0');
+    final period = h >= 12 ? 'PM' : 'AM';
+    final hour12 = h % 12 == 0 ? 12 : h % 12;
+    return '$hour12:$m $period';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppTheme.background,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.viewInsetsOf(context).bottom + 16,
+        left: 20, right: 20, top: 4,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 16),
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                  color: AppTheme.divider,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const Text(
+              'Editar recordatorio',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+            ),
+            const SizedBox(height: 20),
+
+            TextField(
+              controller: _titleCtrl,
+              decoration: InputDecoration(
+                hintText: 'Título del recordatorio',
+                prefixIcon: const Icon(Icons.title_rounded, size: 20),
+                filled: true,
+                fillColor: AppTheme.surface,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.divider),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.divider),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            TextField(
+              controller: _descCtrl,
+              decoration: InputDecoration(
+                hintText: 'Descripción (opcional)',
+                prefixIcon: const Icon(Icons.notes_rounded, size: 20),
+                filled: true,
+                fillColor: AppTheme.surface,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.divider),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.divider),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: _pickTime,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.divider),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.access_time_rounded, size: 18, color: AppTheme.primary),
+                          const SizedBox(width: 6),
+                          Text(
+                            _selectedTime == null ? 'Sin hora' : _formatTime(_selectedTime!),
+                            style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.divider),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<ReminderCategory>(
+                        value: _selectedCategory,
+                        isExpanded: true,
+                        style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary),
+                        items: ReminderCategory.values
+                            .map((cat) => DropdownMenuItem(
+                                  value: cat,
+                                  child: Text(_categoryLabel(cat)),
+                                ))
+                            .toList(),
+                        onChanged: (cat) {
+                          if (cat != null) setState(() => _selectedCategory = cat);
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppTheme.divider),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Cancelar', style: TextStyle(color: AppTheme.textSecondary)),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: _isSaving ? null : _save,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: _isSaving
+                        ? const SizedBox(
+                            width: 20, height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                          )
+                        : const Text('Guardar', style: TextStyle(fontWeight: FontWeight.w600)),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _categoryLabel(ReminderCategory cat) {
+    return switch (cat) {
+      ReminderCategory.habit        => 'Hábito',
+      ReminderCategory.exercise     => 'Ejercicio',
+      ReminderCategory.hydration    => 'Hidratación',
+      ReminderCategory.rest         => 'Descanso',
+      ReminderCategory.productivity => 'Productividad',
+      ReminderCategory.other        => 'Otro',
     };
   }
 }

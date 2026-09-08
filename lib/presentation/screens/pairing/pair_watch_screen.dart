@@ -27,7 +27,7 @@ class _PairWatchScreenState extends ConsumerState<PairWatchScreen> {
       setState(() {
         _success = ok;
         _resultMessage = ok
-            ? '¡Smartwatch vinculado correctamente!'
+            ? 'Dispositivo vinculado correctamente!'
             : 'El código ya expiró o no es válido. Genera uno nuevo en el reloj.';
       });
     } catch (e) {
@@ -45,7 +45,7 @@ class _PairWatchScreenState extends ConsumerState<PairWatchScreen> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Vincular smartwatch'),
+        title: const Text('Vincular Dispositivo'),
         backgroundColor: AppTheme.surface,
         elevation: 0,
       ),
@@ -82,7 +82,7 @@ class _PairWatchScreenState extends ConsumerState<PairWatchScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text(
-                      'Apunta la cámara al código QR que aparece en tu smartwatch',
+                      'Apunta la cámara al código QR que aparece en tu Dispositivo',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.white, fontSize: 13),
                     ),
